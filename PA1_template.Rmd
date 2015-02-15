@@ -21,7 +21,7 @@ Download and unzip file
     download.file(URL,destfile="activity.zip")
     unzip("activity.zip")
 ```
-Read file using read.csv() into a dataframe and check dataframe summary
+Read file using read.csv() into a dataframe and check dataframe summary.
 ```{r, echo=TRUE}
     activity <- read.csv("activity.csv")
     summary(activity)
@@ -33,7 +33,7 @@ Include NAs in total calculation
     total_steps_per_day <- activity %>%
                                   group_by(date) %>%
                                       summarize(total=sum(steps))
-    hist(total_steps_per_day$total,xlab="Total Number of Steps Each Day", main="Histogram - Total Number of Steps Per Day - Inlcude NAs",col="cyan")
+    hist(total_steps_per_day$total,xlab="Total Number of Steps Each Day", main="Histogram - Total Number of Steps Per Day - Inlcude NA",col="cyan")
     mean_include_NA <- mean(total_steps_per_day$total)  
     median_include_NA <- median(total_steps_per_day$total)  
 ```
@@ -45,7 +45,7 @@ Exclude NAs to avoid summarizing to NA, and to avoid setting mean and meadian to
     total_steps_per_day <- activity[!is.na(activity$steps),] %>%
                                   group_by(date) %>%
                                       summarize(total=sum(steps))
-    hist(total_steps_per_day$total,xlab="Total Number of Steps Each Day", main="Histogram - Total Number of Steps Per Day - Exclude NAs",col="cyan")
+    hist(total_steps_per_day$total,xlab="Total Number of Steps Each Day", main="Histogram - Total Number of Steps Per Day - Exclude NA",col="cyan")
     mean_exclude_NA <- mean(total_steps_per_day$total)  
     median_exclude_NA <- median(total_steps_per_day$total)  
 ```
@@ -60,8 +60,8 @@ Caluclate mean/average for each interval using summarize function. Also, calcula
                                 summarize(average=mean(steps))
     max_average <- max(average_steps$average)
     interval_max_average <- average_steps[average_steps$average==max_average,1]
-    plot(average_steps$interval,average_steps$average,type = "l",ylab="Average Steps", xlab= "Interval",main = "Average Steps per Interval", col="cyan")
-    points(interval_max_average,max_average,col="red")
+    plot(average_steps$interval,average_steps$average,type = "l",ylab="Average Steps", xlab= "Interval",main = "Average Steps Per Interval", col="cyan")
+    points(interval_max_average,max_average,col="Red")
    # Plot maximum average using a red point.
 ```
 Interval `r interval_max_average` has the maximum avarage of `r max_average`. Plotted using a red point.  
@@ -82,7 +82,7 @@ Calculate total number of steps per day using dplyr package. NAs are replaced wi
     total_steps_per_day_wo_NA <- activity %>%
                                       group_by(date) %>%
                                           summarize(total=sum(steps))
-    hist(total_steps_per_day_wo_NA$total,xlab="Total Number of Steps Each Day", main="Histogram - Total Number of Steps Per Day - Replace NAs",col="cyan")
+    hist(total_steps_per_day_wo_NA$total,xlab="Total Number of Steps Each Day", main="Histogram - Total Number of Steps Per Day - Replace NA",col="cyan")
     mean_wo_NA <- mean(total_steps_per_day_wo_NA$total)
     median_wo_NA <- median(total_steps_per_day_wo_NA$total)
 ```
@@ -112,5 +112,6 @@ Use lattice plot to plot the activity pattern for weekends and weekdays. Added a
            type="l",
            layout=c(1,2),
            xlab="Interval",
-           ylab="Number of Steps")
+           ylab="Number of Steps",
+           col="cyan")
 ```
