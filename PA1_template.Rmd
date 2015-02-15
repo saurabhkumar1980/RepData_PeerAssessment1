@@ -4,34 +4,56 @@ output:
   html_document:
     keep_md: true
 ---
+
+### General Information
+ * message=FALSE and warning=FALSE are used to suppress warnings and mesages.  
+ * Total Number of steps are plotted 3 ways
+    * Histogram including NAs
+    * Histogram excluding NAs
+    * Time Series plot replacing NAs with mean for corresponding intervals.
+ * NAs are excluded from calculation of Average steps per interval as they cause the averages to be NA
+        
 ## Loading and preprocessing the data
 Download and unzip file
 ```{r, echo=TRUE, message=FALSE, warning=FALSE}
     library(dplyr)
-    #URL <- "http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
-    #download.file(URL,destfile="activity.zip")
-    #unzip("activity.zip")
+    URL <- "http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+    download.file(URL,destfile="activity.zip")
+    unzip("activity.zip")
 ```
-Read file using read.csv() into a dataframe and see dataframe summary
+Read file using read.csv() into a dataframe and check dataframe summary
 ```{r, echo=TRUE}
     activity <- read.csv("activity.csv")
     summary(activity)
 ```
 ## What is mean total number of steps taken per day?
-Calculate total number of steps per day using dplyr package. Remove NAs to avoid summarizing to NA
+Calculate total number of steps per day using dplyr package. Total number of steps are calculated in two ways - including NAs and excluding NAs.
+Include NAs in total calculation
 ```{r, echo=TRUE,fig.height=6,fig.width=6,message=FALSE, warning=FALSE}
     total_steps_per_day <- activity %>%
-                              group_by(date) %>%
-                                  summarize(total=sum(steps))
-    hist(total_steps_per_day$total,xlab="Total Number of Steps Each Day", main="Histogram - Total Number of Steps Per Day",col="cyan")
-    mean_original <- mean(total_steps_per_day$total)  
-    median_original <- median(total_steps_per_day$total)  
+                                  group_by(date) %>%
+                                      summarize(total=sum(steps))
+    hist(total_steps_per_day$total,xlab="Total Number of Steps Each Day", main="Histogram - Total Number of Steps Per Day - Inlcude NAs",col="cyan")
+    mean_include_NA <- mean(total_steps_per_day$total)  
+    median_include_NA <- median(total_steps_per_day$total)  
 ```
-Mean of Total Number of Steps Per Day : `r mean_original`  
-Median of Total Number of Steps Per Day : `r median_original`    
+Mean of Total Number of Steps Per Day : `r mean_include_NA`  
+Median of Total Number of Steps Per Day : `r median_include_NA`    
+
+Exclude NAs to avoid summarizing to NA, and to avoid setting mean and meadian to NA.
+```{r, echo=TRUE,fig.height=6,fig.width=6,message=FALSE, warning=FALSE}
+    total_steps_per_day <- activity[!is.na(activity$steps),] %>%
+                                  group_by(date) %>%
+                                      summarize(total=sum(steps))
+    hist(total_steps_per_day$total,xlab="Total Number of Steps Each Day", main="Histogram - Total Number of Steps Per Day - Exclude NAs",col="cyan")
+    mean_exclude_NA <- mean(total_steps_per_day$total)  
+    median_exclude_NA <- median(total_steps_per_day$total)  
+```
+Mean of Total Number of Steps Per Day : `r mean_exclude_NA`  
+Median of Total Number of Steps Per Day : `r median_exclude_NA`    
 
 ## What is the average daily activity pattern?
-Caluclate mean/average for each interval using summarize function. 
+Caluclate mean/average for each interval using summarize function. Also, calculate max average and corresponding interval and mark on the plot.
 ```{r, echo=TRUE,message=FALSE, warning=FALSE}
     average_steps <- activity[!is.na(activity$steps),] %>%
                           group_by(interval) %>%
@@ -40,42 +62,55 @@ Caluclate mean/average for each interval using summarize function.
     interval_max_average <- average_steps[average_steps$average==max_average,1]
     plot(average_steps$interval,average_steps$average,type = "l",ylab="Average Steps", xlab= "Interval",main = "Average Steps per Interval", col="cyan")
     points(interval_max_average,max_average,col="red")
-#
+   # Plot maximum average using a red point.
 ```
 Interval `r interval_max_average` has the maximum avarage of `r max_average`. Plotted using a red point.  
 
-## Imputing missing values. Calculate missing values  
+## Imputing missing values. 
 Number of Rows with missing values = `r sum(!complete.cases(activity))`  
-Replace missing values with mean/average for that interval. 
+Replace missing values with mean/average for the corresponding interval. 
 ```{r, echo=TRUE, message=FALSE, warning=FALSE}
     for (int in unique(activity[,3]))
     {
-        activity[is.na(activity$steps) & activity$interval==int,1] <-  average_steps[average_steps$interval==int,1]   
+        activity[is.na(activity$steps) & activity$interval==int,1] <-  average_steps[average_steps$interval==int,2]   
     }
 ```
 Number of Rows with missing values after replacement = `r sum(!complete.cases(activity))`  
 
+Calculate total number of steps per day using dplyr package. NAs are replaced with mean of corresponding interval. 
 ```{r, echo=TRUE,fig.height=6,fig.width=6, message=FALSE, warning=FALSE}
     total_steps_per_day_wo_NA <- activity %>%
                                       group_by(date) %>%
                                           summarize(total=sum(steps))
-    hist(total_steps_per_day_wo_NA$total,xlab="Total Number of Steps Each Day", main="Histogram - Total Number of Steps Per Day",col="cyan")
+    hist(total_steps_per_day_wo_NA$total,xlab="Total Number of Steps Each Day", main="Histogram - Total Number of Steps Per Day - Replace NAs",col="cyan")
     mean_wo_NA <- mean(total_steps_per_day_wo_NA$total)
     median_wo_NA <- median(total_steps_per_day_wo_NA$total)
 ```
 Mean of Total Number of Steps Per Day with NA replaced : `r mean_wo_NA`  
 Median of Total Number of Steps Per Day with NA replaced : `r median_wo_NA`    
 
+Comparison of mean and median without any action on NAs, excluding NAs and replacing NAs with mean for corresponding interval.
+
+Handling Scenario     | Mean  | Median
+----------------------|-------|------
+No Action             | `r mean_include_NA` | `r median_include_NA` 
+Exclude NA            | `r mean_exclude_NA` | `r median_exclude_NA` 
+Replace NA with Mean  | `r mean_wo_NA` | `r median_wo_NA`
+
 ## Are there differences in activity patterns between weekdays and weekends?
+Use lattice plot to plot the activity pattern for weekends and weekdays. Added a new column to activity data set to indicate whether a date is weekend or weekday.
 ```{r, echo=TRUE,, message=FALSE, warning=FALSE}
     library(lubridate)
-    library(ggplot2)
+    library(lattice)
     activity$weekday_end <-ifelse(weekdays(ymd(activity$date)) %in% c("Saturday","Sunday"),"weekend","weekday")
     average_steps <- activity %>%
                         group_by(weekday_end,interval) %>%
-                            summarize(average=mean(steps))
-    g <- ggplot(average_steps, aes(interval,average))
-    g <- g + geom_line(col="blue") + facet_grid(weekday_end ~ .)
-    g <- g + labs(x="Interval", y="Number of Steps")
-    print(g)
+                            summarize(average=mean(steps))        
+   # average_steps <- transform(average_steps, weekday_end=factor(weeday_end))
+    xyplot(average ~ interval | weekday_end,
+           data=average_steps,
+           type="l",
+           layout=c(1,2),
+           xlab="Interval",
+           ylab="Number of Steps")
 ```
