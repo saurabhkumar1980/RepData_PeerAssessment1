@@ -8,10 +8,10 @@ output:
 ### General Information
  * message=FALSE and warning=FALSE are used to suppress warnings and mesages.  
  * Total Number of steps are plotted 3 ways
-    * Histogram including NAs
-    * Histogram excluding NAs
+    * Histogram including NAs.
+    * Histogram excluding NAs.
     * Time Series plot replacing NAs with mean for corresponding intervals.
- * NAs are excluded from calculation of Average steps per interval as they cause the averages to be NA
+ * NAs are excluded from calculation of Average steps per interval as they cause the averages to be NA.
         
 ## Loading and preprocessing the data
 Download and unzip file
